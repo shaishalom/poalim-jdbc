@@ -1,18 +1,21 @@
 package com.poalim.dao;
 
+import java.io.File;
+import java.net.URL;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-//import org.h2.jdbcx.JdbcDataSource;
-
-//import org.h2.jdbcx.JdbcDataSource;
-
 import com.poalim.bean.LakoachTnuaaVO;
+import com.poalim.utils.SqlUtils;
 
 public class LakoachDao {
 
@@ -23,30 +26,19 @@ public class LakoachDao {
 				+ " Where lakoach.id = tnuot.id  " + " and tnuot.transaction_date >= '2020-09-01' "
 				+ " Group by esek,ccno,lakoach.id, lakoach.name ";
 
-		// Class.forName("com.mysql.jdbc.Driver");
-
-		//JdbcDataSource ds = new JdbcDataSource();
-		String url = "jdbc:h2:mem:";
-		// ds.setURL("jdbc:h2:file:C:/temp/lakoachTnuot");
-		// ds.setUser("sa");
-		// ds.setPassword("sa");
-//        try {
-//            Connection conn = DriverManager.getConnection(url);
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }	
+		Class.forName("org.h2.Driver");
+		createTablesForIniit();
 
 		LakoachTnuaaVO lakoachTnuaaVO = null;
-		List<LakoachTnuaaVO> lakoachTnuaaList = new ArrayList<LakoachTnuaaVO>();
-		try (Connection connection = DriverManager.getConnection(url);
+		List<LakoachTnuaaVO> lakoachTnuaaList = new ArrayList<LakoachTnuaaVO>(); 
+		
+		try (Connection connection = DriverManager.getConnection("jdbc:h2:file:C:/temp/lakoachTnuot;MV_STORE=FALSE",
+				"sa", "");
 
 				// Step 2:Create a statement using connection object
-				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-			// preparedStatement.setString(1, "2020-09-01");
-
-			// System.out.println(preparedStatement);
+				Statement statement = connection.createStatement()) {
 			// Step 3: Execute the query or update query
-			ResultSet rs = preparedStatement.executeQuery(sql);
+			ResultSet rs = statement.executeQuery(sql);
 
 			// STEP 5: Extract data from result set
 			while (rs.next()) {
@@ -63,19 +55,33 @@ public class LakoachDao {
 			}
 
 			rs.close();
-			preparedStatement.close();
+			statement.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			// process sql exception
 			printSQLException(e);
 		} finally {
-			lakoachTnuaaVO = new LakoachTnuaaVO(1L, "shai", new Double(100.0), "stam1", "1234");
-			lakoachTnuaaList.add(lakoachTnuaaVO);
-			lakoachTnuaaVO = new LakoachTnuaaVO(2L, "shai2", new Double(200.0), "stam1", "1234");
-			lakoachTnuaaList.add(lakoachTnuaaVO);
 
 		}
 		return lakoachTnuaaList;
+	}
+
+	public void createTablesForIniit() {
+		Connection con = null;
+		try {
+			con = DriverManager.getConnection("jdbc:h2:file:C:/temp/lakoachTnuot;MV_STORE=FALSE", "sa", "");
+
+			URL url = this.getClass().getClassLoader().getResource("data.sql");
+			File inputFile = new File(url.toURI());
+			
+			//File inputFile = new File("C:/temp/data.sql");
+			SqlUtils.executeSqlScript(con, inputFile);
+			con.close();
+			System.out.println("tables are created");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	
 	}
 
 	private void printSQLException(SQLException ex) {

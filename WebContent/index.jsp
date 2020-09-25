@@ -1,3 +1,4 @@
+<%@page import="com.poalim.bo.LakoachService"%>
 <%@page import="com.poalim.bean.LakoachTnuaaVO" %>
 <%@page import="com.poalim.dao.LakoachDao" %>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
@@ -19,21 +20,12 @@
    <body>
    
    <%
-   		LakoachDao dao = new LakoachDao();
-   		List<LakoachTnuaaVO> lakoachTnuaaList = dao.fetchLakoachAccounts();
-   		System.out.println(lakoachTnuaaList.size());
+   		LakoachService service = new LakoachService();
+   		List<LakoachTnuaaVO> lakoachTnuaaList = service.fetchLakoachAccounts();
+   		System.out.println("size of List:"+lakoachTnuaaList.size());
    
    %>
-<%-- 
-      <sql:setDataSource var = "snapshot" driver = "com.mysql.jdbc.Driver"
-         url = "jdbc:mysql://localhost/TEST"
-         user = "root"  password = "pass123"/>
- 
-      <sql:query dataSource = "${snapshot}" var = "result">
-         SELECT * from Employees;
-      </sql:query>
---%> 
-      <table border = "1" width = "100%">
+     <table border = "1" width = "100%">
          <tr>
             <th>Lakoach ID</th>
             <th>Lakoach Name</th>
