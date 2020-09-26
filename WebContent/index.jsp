@@ -20,8 +20,9 @@
    <body>
    
    <%
+   		String idLakoach=request.getParameter("id");
    		LakoachService service = new LakoachService();
-   		List<LakoachTnuaaVO> lakoachTnuaaList = service.fetchLakoachAccounts();
+   		List<LakoachTnuaaVO> lakoachTnuaaList = service.fetchLakoachAccounts(idLakoach);
    		System.out.println("size of List:"+lakoachTnuaaList.size());
    
    %>

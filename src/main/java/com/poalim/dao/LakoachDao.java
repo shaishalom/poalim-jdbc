@@ -2,29 +2,34 @@ package com.poalim.dao;
 
 import java.io.File;
 import java.net.URL;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.poalim.bean.LakoachTnuaaVO;
 import com.poalim.utils.SqlUtils;
+import com.poalim.utils.Utils;
 
 public class LakoachDao {
 
-	public List<LakoachTnuaaVO> fetchLakoachAccounts() throws ClassNotFoundException {
+	public List<LakoachTnuaaVO> fetchLakoachAccounts(Long lakoachId) throws ClassNotFoundException {
 
+		
+		String firstdateInMonth = Utils.getFirstDateInCurMonthAndYear();
+		String lastdateInMonth = Utils.getLastDateInCurMonthAndYear();
+	
 		int result = 0;
 		String sql = "Select sum(amount) amount,esek,ccno,lakoach.id id, lakoach.name name " + " From lakoach,tnuot  "
-				+ " Where lakoach.id = tnuot.id  " + " and tnuot.transaction_date >= '2020-09-01' "
-				+ " Group by esek,ccno,lakoach.id, lakoach.name ";
+				+ " Where lakoach.id = tnuot.id  " + "and tnuot.transaction_date >= ? and tnuot.transaction_date <= ? ";
+				if (lakoachId!=null) {
+					sql= sql + " and lakoach.id = ? ";
+				}
+							
+				sql= sql+ " Group by esek,ccno,lakoach.id, lakoach.name ";
 
 		Class.forName("org.h2.Driver");
 		createTablesForIniit();
@@ -36,9 +41,16 @@ public class LakoachDao {
 				"sa", "");
 
 				// Step 2:Create a statement using connection object
-				Statement statement = connection.createStatement()) {
+				PreparedStatement ps = connection.prepareStatement(sql)){
+				ps.setString(1, firstdateInMonth);
+				ps.setString(2, lastdateInMonth);
+				if (lakoachId!=null) {
+					ps.setLong(3, lakoachId);
+				}
+				
+//				) {
 			// Step 3: Execute the query or update query
-			ResultSet rs = statement.executeQuery(sql);
+			ResultSet rs = ps.executeQuery();
 
 			// STEP 5: Extract data from result set
 			while (rs.next()) {
@@ -55,7 +67,7 @@ public class LakoachDao {
 			}
 
 			rs.close();
-			statement.close();
+			ps.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			// process sql exception
